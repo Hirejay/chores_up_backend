@@ -4,7 +4,7 @@ const otpGenerator=require('otp-generator');
 const validator=require('validator');
 const ProfileModel=require('../models/Profile')
 const jwt=require('jsonwebtoken');
-const bcrypt=require('bcrypt');
+const bcrypt = require('bcryptjs');
 const EPFO=require('../models/EPFO');
 const Profile = require('../models/Profile');
 //sendotp
