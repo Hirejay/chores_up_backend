@@ -38,9 +38,9 @@ const activeTaskSchema=new mongoose.Schema({
     ,
     status:{
         type:String,
-        enum:['Requested','Active'],
+        enum:['requested','active'],
         required:true,
-        default:"Requested"
+        default:"requested"
     },
     createdAt:{
         type:Date,

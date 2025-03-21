@@ -19,6 +19,7 @@ exports.sendOTP = async (req, res) => {
                 message: "Please fill in all the required details."
             });
         }
+        
 
         // 2. Validate Email Format
         if (!validator.isEmail(email)) {
@@ -82,11 +83,11 @@ exports.sendOTP = async (req, res) => {
         });
     }
 };
-
-
 exports.signUp = async (req, res) => {
     try {
         const { firstName, lastName, email, phoneNo, accountType, password, confirmPassword, otp } = req.body;
+
+        
 
         // 1. Validate Required Fields
         if (!firstName || !lastName || !email || !phoneNo || !password || !confirmPassword || !otp || !accountType) {
@@ -131,6 +132,8 @@ exports.signUp = async (req, res) => {
             });
         }
 
+        
+
         // 6. Check OTP Expiry (Assuming OTP expires in 5 minutes)
         const otpExpiryTime = 5 * 60 * 1000; // 5 minutes in milliseconds
         if (new Date() - recentOtp.createdAt > otpExpiryTime) {
@@ -153,6 +156,7 @@ exports.signUp = async (req, res) => {
 
         // 9. Hash the Password
         const hashedPassword = await bcrypt.hash(password, 10);
+      
 
         // 10. Create User
         const user = await User.create({
@@ -163,7 +167,7 @@ exports.signUp = async (req, res) => {
             accountType,
             password: hashedPassword
         });
-
+       
         // 11. If the User is a Worker, Create EPFO and Profile
         if (accountType === "worker") {
             const epfo = await EPFO.create({ worker: user._id });
@@ -171,6 +175,8 @@ exports.signUp = async (req, res) => {
 
             user.additionalDetails = profileDetails._id;
             await user.save();
+
+            
         }
 
         // 12. Send Success Response

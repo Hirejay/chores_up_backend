@@ -27,8 +27,8 @@ const UserSchema=new mongoose.Schema({
     accountType:{
         type:String,
         required:true,
-        enum:['Worker','Client','Admin'],
-        default:'Client'
+        enum:['worker','client','admin'],
+        
     },
     password:{
         type:String,

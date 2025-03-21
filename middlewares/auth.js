@@ -40,7 +40,7 @@ exports.isAuth = async (req, res, next) => {
 // Client Role Middleware
 exports.isClient = (req, res, next) => {
     try {
-        if (req.user.accountType !== 'Client') {
+        if (req.user.accountType !== 'client') {
             return res.status(403).json({
                 success: false,
                 message: 'Access Denied: Clients Only',
@@ -56,7 +56,7 @@ exports.isClient = (req, res, next) => {
 // Worker Role Middleware
 exports.isWorker = (req, res, next) => {
     try {
-        if (req.user.accountType !== 'Worker') {
+        if (req.user.accountType !== 'worker') {
             return res.status(403).json({
                 success: false,
                 message: 'Access Denied: Workers Only',
@@ -82,7 +82,7 @@ exports.isAccepted = async (req, res, next) => {
         }
 
         const profile = await Profile.findById(userDetail.additionalDetails);
-        if (!profile || profile.profileStatus !== 'Accepted') {
+        if (!profile || profile.profileStatus !== 'accepted') {
             return res.status(403).json({
                 success: false,
                 message: 'Access Denied: Only Accepted Workers Allowed',
@@ -103,7 +103,7 @@ exports.isAccepted = async (req, res, next) => {
 // Admin Role Middleware
 exports.isAdmin = (req, res, next) => {
     try {
-        if (req.user.accountType !== 'Admin') {
+        if (req.user.accountType !== 'admin') {
             return res.status(403).json({
                 success: false,
                 message: 'Access Denied: Admins Only',

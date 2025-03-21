@@ -36,7 +36,7 @@ const taskSchema=new mongoose.Schema({
     },
     status:{
         type:String,
-        enum:['Completed','Canceled'],
+        enum:['completed','canceled'],
         required:true,
         
     },

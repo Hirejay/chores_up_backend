@@ -60,7 +60,7 @@ exports.acceptRequestedTask = async (req, res) => {
         }
 
         // Check if the task is still available
-        if (task.status !== "Requested") {
+        if (task.status !== "requested") {
             return res.status(400).json({
                 success: false,
                 message: "This task has already been accepted or is no longer available."
@@ -70,7 +70,7 @@ exports.acceptRequestedTask = async (req, res) => {
         // Assign worker and update status
         task.worker = workerId;
         task.workerLocation = workerLocation;
-        task.status = "Active"; // Corrected status to "Active"
+        task.status = "active"; // Corrected status to "Active"
         
         // Save the updated task
         await task.save();
@@ -162,7 +162,7 @@ exports.getRequestedTask = async (req, res) => {
         }
 
         const allRequestedTasks = await ActiveTask.find({
-            status: "Requested",
+            status: "requested",
             category: { $in: profile.categorys }
         });
 
@@ -195,7 +195,7 @@ exports.getRequestedTaskForClient = async (req, res) => {
         }
 
         const requestedTasks = await ActiveTask.find({
-            status: "Requested",
+            status: "requested",
             client: clientId
         });
 
@@ -226,7 +226,7 @@ exports.cancelRequestedTask = async (req, res) => {
         const deletedActiveTaskDetail = await ActiveTask.findOneAndDelete({
             _id: activeTaskId,
             client: userId,
-            status: "Requested"
+            status: "requested"
         });
 
         if (deletedActiveTaskDetail) {
@@ -236,7 +236,7 @@ exports.cancelRequestedTask = async (req, res) => {
                 instruction: deletedActiveTaskDetail.instruction,
                 client: deletedActiveTaskDetail.client,
                 clientLocation: deletedActiveTaskDetail.clientLocation,
-                status: "Canceled", // Fixed spelling from "Chancel" to "Canceled"
+                status: "canceled", // Fixed spelling from "Chancel" to "Canceled"
                 requestedAt: deletedActiveTaskDetail.createdAt,
             });
 
@@ -292,7 +292,7 @@ exports.completeActiveTask = async (req, res) => {
             clientLocation: completedTask.clientLocation,
             worker: completedTask.worker,
             workerLocation: completedTask.workerLocation,
-            status: "Completed",
+            status: "completed",
             requestedAt: completedTask.createdAt,
         });
 

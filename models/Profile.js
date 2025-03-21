@@ -7,7 +7,7 @@ const profileSchema=new mongoose.Schema({
     },
     gender:{
         type:String,
-        enum:['Male','Female','Other',null],
+        enum:['male','female','other',null],
         default:null,
     },
     dateOfBirth:{
@@ -30,8 +30,8 @@ const profileSchema=new mongoose.Schema({
     }],
     profileStatus:{
         type:String,
-        enum:['Pending','Accepted','Rejected'],
-        default:'Pending',
+        enum:['pending','accepted','rejected'],
+        default:'pending',
     },
     ratingAndReviews:[{
         type:mongoose.Schema.Types.ObjectId,
