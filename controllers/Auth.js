@@ -201,102 +201,60 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // 1. Validate Input Fields
         if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Email and password are required."
-            });
+            return res.status(400).json({ success: false, message: "Email and password are required." });
         }
 
-        // 2. Validate Email Format
-        if (!validator.isEmail(email)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid email format."
-            });
-        }
-
-        // 3. Find User by Email
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid email or password."
-            });
+            return res.status(401).json({ success: false, message: "Invalid email or password." });
         }
 
-        // 4. Compare Passwords
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid email or password."
-            });
+            return res.status(401).json({ success: false, message: "Invalid email or password." });
         }
 
-        // 5. Generate JWT Token
-        const userPayload = {
-            email: user.email,
-            id: user._id,
-            accountType: user.accountType
-        };
-
+        const userPayload = { email: user.email, id: user._id, accountType: user.accountType };
         const token = jwt.sign(userPayload, process.env.JWT_SECRET_KEY, { expiresIn: "3d" });
 
-        // 6. Remove Password from Response
-        user.password = undefined;
-
-        // 7. Set Cookie with Secure Options
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Secure only in production
+            secure: process.env.NODE_ENV === "production",
             expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
         });
 
-        // 8. Send Response
-        return res.status(200).json({
-            success: true,
-            message: "User logged in successfully.",
-            user,
-            token
-        });
-
+        return res.status(200).json({ success: true, message: "User logged in successfully.", user, token });
     } catch (error) {
-        console.error("Error during user login:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error. Please try again later."
-        });
+        return res.status(500).json({ success: false, message: "Internal server error." });
     }
 };
+
 
 
 // Logout
 exports.logout = async (req, res) => {
     try {
-        // 1. Clear the cookie containing the JWT token
-        res.cookie("token", "", {
+        res.clearCookie('token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Secure only in production
-            expires: new Date(0) // Expire immediately
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "None"
         });
 
-        // 2. Send Success Response
         return res.status(200).json({
             success: true,
             message: "User logged out successfully."
         });
-
     } catch (error) {
-        console.error("Error during user logout:", error);
+        console.error("Logout error:", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error. Please try again later."
         });
     }
 };
+
 
 
 //change password
