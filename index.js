@@ -40,6 +40,9 @@ app.use('/api/v1', userRouter);
 app.get('/', (req, res) => {
     res.send('Hello, This is the Chores Up App');
 });
+app.get('/test', (req, res) => {
+    res.send('Test route working');
+});
 
 // Export for Vercel
 module.exports = app;
