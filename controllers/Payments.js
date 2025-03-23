@@ -9,9 +9,9 @@ exports.generateQRCODE=async(req,res)=>{
         const worker=await User.findById(workerId);
         const profile=await Profile.findById(worker.additionalDetails);
         const upiId=profile.upiid;
-        const {amountpay,clientId}=req.body;
+        const {amountpay,taskId}=req.body;
 
-        if (!amountpay || isNaN(amountpay) || amountpay <= 0 || !clientId) {
+        if (!amountpay || isNaN(amountpay) || amountpay <= 0 || !taskId) {
             return res.status(400).json({ success: false, message: "Invalid amount or client ID" });
         }
          // Replace with actual UPI ID
@@ -19,7 +19,7 @@ exports.generateQRCODE=async(req,res)=>{
         const transactionId = "TXN" + Date.now(); // Unique transaction ID
 
         // Generate UPI Payment URL
-        const upiUrl = `upi://pay?pa=${upiId}&am=${amount}&cu=INR&tr=${transactionId}&tn=${encodeURIComponent(clientId)}`;
+        const upiUrl = `upi://pay?pa=${upiId}&am=${amount}&cu=INR&tr=${transactionId}&tn=${encodeURIComponent(taskId)}`;
 
        
         // Generate QR Code

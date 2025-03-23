@@ -6,33 +6,41 @@ require('dotenv').config();
 // Authentication Middleware
 exports.isAuth = async (req, res, next) => {
     try {
-        const token =
-            req.cookies.token ||
-            req.body.token ||
-            (req.headers['authorization'] && req.headers['authorization'].replace("Bearer ", ""));
+       
+
+        // Retrieve token from headers
+        const authHeader = req.headers.authorization;
+        
+
+        const token = authHeader?.split(" ")[1];
 
         if (!token) {
+         
             return res.status(401).json({
                 success: false,
-                message: 'Unauthorized: Token Not Found',
+                message: "Unauthorized: Token Not Found",
             });
         }
 
         try {
+          
             const userPayload = jwt.verify(token, process.env.JWT_SECRET_KEY);
-            req.user = userPayload;
+            
+
+            req.user = userPayload; // Attach user payload to request
             next();
         } catch (error) {
+            
             return res.status(403).json({
                 success: false,
-                message: 'Invalid or Expired Token',
+                message: "Invalid or Expired Token",
             });
         }
     } catch (error) {
-        console.error("Error: Token Verification Failed", error);
+      
         return res.status(500).json({
             success: false,
-            message: 'Internal Server Error',
+            message: "Internal Server Error",
         });
     }
 };
@@ -62,8 +70,10 @@ exports.isWorker = (req, res, next) => {
                 message: 'Access Denied: Workers Only',
             });
         }
+       
         next();
     } catch (error) {
+       
         console.error("Error: Worker Verification Failed", error);
         next(error);
     }
@@ -90,6 +100,7 @@ exports.isAccepted = async (req, res, next) => {
         }
 
         req.profile = profile;
+        
         next();
     } catch (error) {
         console.error("Error: Worker Acceptance Verification Failed", error);

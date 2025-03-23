@@ -7,6 +7,8 @@ const jwt=require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const EPFO=require('../models/EPFO');
 const Profile = require('../models/Profile');
+require('dotenv').config();
+
 //sendotp
 exports.sendOTP = async (req, res) => {
     try {
@@ -196,28 +198,37 @@ exports.signUp = async (req, res) => {
 };
 
 //login
-
 exports.login = async (req, res) => {
     try {
+        
+
         const { email, password } = req.body;
 
         if (!email || !password) {
+            
             return res.status(400).json({ success: false, message: "Email and password are required." });
         }
 
         const user = await User.findOne({ email });
 
         if (!user) {
+          
             return res.status(401).json({ success: false, message: "Invalid email or password." });
         }
 
+      
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+           
             return res.status(401).json({ success: false, message: "Invalid email or password." });
         }
 
         const userPayload = { email: user.email, id: user._id, accountType: user.accountType };
+    
+
         const token = jwt.sign(userPayload, process.env.JWT_SECRET_KEY, { expiresIn: "3d" });
+      
 
         res.cookie("token", token, {
             httpOnly: true,
@@ -225,35 +236,42 @@ exports.login = async (req, res) => {
             expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
         });
 
-        return res.status(200).json({ success: true, message: "User logged in successfully.", user, token });
+      
+
+        return res.status(200).json({ success: true, message: "User logged in successfully.", user:userPayload, token });
     } catch (error) {
+       
         return res.status(500).json({ success: false, message: "Internal server error." });
     }
 };
 
-
-
 // Logout
 exports.logout = async (req, res) => {
     try {
-        res.clearCookie('token', {
+       
+
+        // Clear authentication cookie
+        res.clearCookie("token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "None"
+            secure: process.env.NODE_ENV === "production", // Ensure security in production
+            sameSite: "None", // Required for cross-site cookies in modern browsers
         });
+
 
         return res.status(200).json({
             success: true,
-            message: "User logged out successfully."
+            message: "User logged out successfully.",
         });
     } catch (error) {
-        console.error("Logout error:", error);
+      
         return res.status(500).json({
             success: false,
-            message: "Internal server error. Please try again later."
+            message: "Internal server error. Please try again later.",
         });
     }
 };
+
+
 
 
 

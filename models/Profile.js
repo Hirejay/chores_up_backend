@@ -3,7 +3,7 @@ const mongoose=require('mongoose');
 const profileSchema=new mongoose.Schema({
     upiid:{
         type:String,
-        required:true
+        default:null
     },
     gender:{
         type:String,

@@ -5,10 +5,11 @@ const Profile = require("../models/Profile");
 //profile
 exports.createProfile = async (req, res) => {
     try {
-        const { upiid, gender, dateOfBirth, about, experience, categorys, worker } = req.body;
+        const workerId=req.user.id;
+        const { upiid, gender, dateOfBirth, about, experience, categorys } = req.body;
 
         // Validate required fields
-        if (!upiid || !gender || !dateOfBirth || !about || !experience || !categorys || !worker) {
+        if (!upiid || !gender || !dateOfBirth || !about || !experience || !categorys || !workerId) {
             return res.status(400).json({
                 success: false,
                 message: "Please fill all details",
@@ -17,7 +18,7 @@ exports.createProfile = async (req, res) => {
 
         // Update or create the profile
         const profile = await Profile.findOneAndUpdate(
-            { worker }, 
+            { worker:workerId }, 
             { upiid, gender, dateOfBirth, about, experience, categorys }, 
             { new: true } // Returns updated document and creates new if not exists
         );
@@ -47,16 +48,16 @@ exports.createProfile = async (req, res) => {
 
 exports.getProfile = async (req, res) => {
     try {
-        const { worker } = req.body; // Ensure the request body contains `worker`
+        const workerId  = req.user.id; // Ensure the request body contains `worker`
         
-        if (!worker) {
+        if (!workerId) {
             return res.status(400).json({
                 success: false,
                 message: "Worker ID is required",
             });
         }
 
-        const profile = await Profile.findOne({ worker });
+        const profile = await Profile.findOne({ worker:workerId });
 
         if (!profile) {
             return res.status(404).json({

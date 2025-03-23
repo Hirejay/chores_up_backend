@@ -13,7 +13,7 @@ const {
 
 // Category Routes
 router.post('/category/create', isAuth, isAdmin, createCategory); // Create a new category
-router.get('/category/all', isAuth, isAdmin, getAllCategory);  // Get all categories
+router.get('/category/all', isAuth, getAllCategory);  // Get all categories
 router.put('/category/edit', isAuth, isAdmin, editCategory); // Edit a category
 router.delete('/category/delete', isAuth, isAdmin, deleteCategory); // Delete a category
 

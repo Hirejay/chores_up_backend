@@ -1,18 +1,18 @@
-const mongoose=require('mongoose');
-const Task=require('../models/Task')
-const activeTaskSchema=new mongoose.Schema({
-    category:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Category',
-        required:true,
+const mongoose = require('mongoose');
+
+const activeTaskSchema = new mongoose.Schema({
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: true,
     },
-    instruction:{
-        type:String,
+    instruction: {
+        type: String,
     },
-    client:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User',
-        required:true,
+    client: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
     },
     clientLocation: { 
         type: {
@@ -22,35 +22,30 @@ const activeTaskSchema=new mongoose.Schema({
         },
         required: true
     },
-    worker:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User', 
-        default:null
+    worker: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', 
+        default: null
     },
     workerLocation: {
         type: {
             latitude: { type: Number },
             longitude: { type: Number },
-           
         },
         default: null
-    }    
-    ,
-    status:{
-        type:String,
-        enum:['requested','active'],
-        required:true,
-        default:"requested"
     },
-    createdAt:{
-        type:Date,
-        default:Date.now,
-        required:true,    
+    status: {
+        type: String,
+        enum: ['requested', 'active'],
+        required: true,
+        default: "requested"
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        required: true,    
     }
+});
 
-})
-
-
-
-const ActiveTask=mongoose.model('ActiveTask',activeTaskSchema);
-module.exports=ActiveTask;
+const ActiveTask = mongoose.model('ActiveTask', activeTaskSchema);
+module.exports = ActiveTask;

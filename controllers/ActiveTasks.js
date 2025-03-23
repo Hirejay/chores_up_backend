@@ -5,15 +5,17 @@ const User = require('../models/User');
 const Profile=require("../models/Profile")
 const EPFO=require('../models/EPFO')
 require('dotenv').config();
+
 exports.createRequestedTask = async (req, res) => {
     try {
         const { category, instruction, clientLocation } = req.body;
         const client = req.user.id;
 
-        if (!category || !client || !clientLocation) {
+        // Validate required fields
+        if (!category || !client || !clientLocation || !clientLocation.latitude || !clientLocation.longitude || !clientLocation.address) {
             return res.status(400).json({
                 success: false,
-                message: "All fields are required."
+                message: "All fields including client location (latitude, longitude) are required."
             });
         }
 
@@ -33,6 +35,7 @@ exports.createRequestedTask = async (req, res) => {
         });
     }
 };
+
 
 
 
@@ -94,40 +97,35 @@ exports.acceptRequestedTask = async (req, res) => {
 
 exports.updateWorkerLocation = async (req, res) => {
     try {
-        const { taskId } = req.body; // Extract task ID from request 
-        const { latitude, longitude } = req.body; // Extract new worker location details
+        const workerId=req.user.id;
+        const {  latitude, longitude } = req.body; // Extract workerId and location details
 
-        if (!latitude || !longitude ) {
+        // Validate required fields
+        if (!workerId || !latitude || !longitude) {
             return res.status(400).json({
                 success: false,
-                message: "Latitude and  longitude are required."
+                message: "Worker ID, latitude, and longitude are required."
             });
         }
 
-        // Find and update the worker's location in ActiveTask
-        const updatedTask = await ActiveTask.findByIdAndUpdate(
-            taskId,
+        // Update worker location in all ActiveTask documents where worker matches workerId
+        const updatedTasks = await ActiveTask.updateMany(
+            { worker: workerId }, // Filter: Find all tasks where worker matches workerId
             {
                 $set: {
                     "workerLocation.latitude": latitude,
                     "workerLocation.longitude": longitude,
-                    
                 }
             },
-            { new: true } // Return updated document
+            { new: true } // Return updated documents
         );
 
-        if (!updatedTask) {
-            return res.status(404).json({
-                success: false,
-                message: "Active task not found."
-            });
-        }
+        
 
         return res.status(200).json({
             success: true,
-            message: "Worker location updated successfully.",
-            updatedTask
+            message: "Worker location updated successfully ",
+            updatedTasks
         });
 
     } catch (error) {
@@ -164,12 +162,14 @@ exports.getRequestedTask = async (req, res) => {
         const allRequestedTasks = await ActiveTask.find({
             status: "requested",
             category: { $in: profile.categorys }
-        });
-
+        })
+        .populate("category")  // Populates category details
+        .populate("client", "firstName lastName email"); // Populates specific fields of client
+        
         return res.status(200).json({
             success: true,
             message: "Fetched all requested tasks successfully.",
-            allRequestedTasks
+            tasks:allRequestedTasks
         });
 
     } catch (error) {
@@ -197,12 +197,15 @@ exports.getRequestedTaskForClient = async (req, res) => {
         const requestedTasks = await ActiveTask.find({
             status: "requested",
             client: clientId
-        });
+        })
+        .populate("category") // Populates category details
+        .populate("client", "firstName lastName email"); // Populates specific client fields
+        
 
         return res.status(200).json({
             success: true,
             message: "Fetched all requested tasks for the client successfully.",
-            requestedTasks
+            tasks:requestedTasks
         });
 
     } catch (error) {
@@ -325,9 +328,15 @@ exports.getAllActiveTask = async (req, res) => {
         const userId = req.user.id;
 
         // 🔹 Use $or to check both worker & client fields
-        const activeTasks = await Task.find({
-            $or: [{ worker: userId }, { client: userId }]
-        });
+        const activeTasks = await ActiveTask.find({
+            $or: [{ worker: userId }, { client: userId }],
+            status: "active",
+          })
+            .populate('category', 'categoryName price') // Populate category fields
+            .populate('client', 'firstName lastName email phoneNo') // Populate client fields
+            .populate('worker', 'firstName lastName email phoneNo'); // Populate worker fields
+
+       
 
         return res.status(200).json({
             success: true,

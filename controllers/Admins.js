@@ -7,7 +7,7 @@ const {acceptProfile}=require('../template/acceptedProfileTemplate')
 
 exports.getPendingProfiles = async (req, res) => {
     try {
-        const pendingProfiles = await Profile.find({ profileStatus: "pending" }).populate("worker");
+        const pendingProfiles = await Profile.find({ profileStatus: "pending" }).populate("worker categorys");
 
         return res.status(200).json({
             success: true,
@@ -28,7 +28,7 @@ exports.getPendingProfiles = async (req, res) => {
 
 exports.getAcceptedProfiles = async (req, res) => {
     try {
-        const acceptedProfiles = await Profile.find({ profileStatus: "accepted" }).populate("worker");
+        const acceptedProfiles = await Profile.find({ profileStatus: "accepted" }).populate("worker categorys");
 
         return res.status(200).json({
             success: true,

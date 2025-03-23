@@ -1,6 +1,5 @@
 require('dotenv').config();
-
-exports.epfoPayment=({name,id,amount,qrCodeData,upiUrl})=>{
+exports.epfoPayment = ({ name, id, amount, qrCodeData, upiUrl }) => {
     return `<!DOCTYPE html>
             <html lang="en">
             <head>
@@ -39,5 +38,5 @@ exports.epfoPayment=({name,id,amount,qrCodeData,upiUrl})=>{
                 </div>
             </body>
             </html>
-            `
-}
+            `;
+};

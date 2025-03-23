@@ -1,6 +1,8 @@
 const EPFO=require('../models/EPFO');
 const { epfoPayment } = require('../template/EPFOPaymentTemplate');
 const QRCode=require('qrcode');
+const User=require('../models/User')
+const mailSender=require("../utils/mailSender")
 
 exports.decreaseEPFOFees = async (req,res) => {
     try {
@@ -35,7 +37,15 @@ exports.decreaseEPFOFees = async (req,res) => {
 exports.getAllEPFO = async (req, res) => {
     try {
         // Fetch all EPFO records with worker details (name & email)
-        const allEPFOs = await EPFO.find().populate('worker', 'name email');
+        const allEPFOs = await EPFO.find().populate({
+            path: 'worker', // Populate the 'worker' field
+            populate: {
+              path: 'additionalDetails', // Populate the 'additionalDetails' field inside 'worker'
+              populate:{
+                path: 'categorys'
+              }
+            },
+          });
 
         // Filter records based on fees
         const zeroFees = allEPFOs.filter(record => record.fees === 0);
@@ -44,7 +54,7 @@ exports.getAllEPFO = async (req, res) => {
         // Calculate total fees for zeroFees and nonZeroFees
         const totalZeroFees = zeroFees.reduce((sum, record) => sum + record.fees, 0);
         const totalNonZeroFees = nonZeroFees.reduce((sum, record) => sum + record.fees, 0);
-
+        
         res.status(200).json({
             success: true,
             message: "Fetched all EPFO records successfully",
@@ -69,7 +79,7 @@ exports.getMyEPFO = async (req, res) => {
     try {
         const userId = req.user.id; // Get the logged-in user's ID
 
-        const myEPFO = await EPFO.findOne({ worker: userId }).populate('worker', 'firstName email'); // Fetch EPFO for user
+        const myEPFO = await EPFO.findOne({ worker: userId }).populate('worker'); // Fetch EPFO for user
 
         if (!myEPFO) {
             return res.status(404).json({
@@ -93,7 +103,6 @@ exports.getMyEPFO = async (req, res) => {
         });
     }
 };
-
 
 exports.generatePaymentEmail = async (req, res) => {
     try {

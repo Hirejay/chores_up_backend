@@ -6,8 +6,8 @@ const { isAuth, isAccepted, isAdmin, isClient, isWorker } = require('../middlewa
 
 const {getRouteActive,getRouteRequested}=require('../controllers/Locations');
 
-router.get('/location/get-route-active',isAuth,getRouteActive);
-router.get('/location/get-route-requested',isAuth,isWorker,isAccepted,getRouteRequested);
+router.post('/location/get-route-active',isAuth,getRouteActive);
+router.post('/location/get-route-requested',isAuth,isWorker,isAccepted,getRouteRequested);
 
 
 module.exports = router;
