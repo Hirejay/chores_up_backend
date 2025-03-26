@@ -1,18 +1,13 @@
+
 const express = require('express');
 const router = express.Router();
-
-// Middleware
-const { isAuth, isAccepted, isAdmin, isClient, isWorker } = require('../middlewares/auth');
-
-// Controllers
-const {createProfile,getProfile}=require("../controllers/Users")
-
-//User Routes
+const {updateUser,getUser} = require("../controllers/Users");
+const {isAccepted,isAdmin,isAuth,isClient,isWorker} = require('../middlewares/auth');
 
 
-//Profile Routes
-router.put('/user/createprofile',isAuth,isWorker,createProfile);
-router.get('/user/getprofile',isAuth,isWorker,getProfile);
+router.put('/user/updateuser',isAuth,updateUser);
+router.get('/user/getuser',isAuth,getUser);
+
 
 
 module.exports = router;

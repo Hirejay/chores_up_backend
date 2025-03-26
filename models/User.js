@@ -36,9 +36,9 @@ const UserSchema=new mongoose.Schema({
     },
     image:{
         type:String, 
-        default: function () {
-            return `https://ui-avatars.com/api/?name=${this.firstName}+${this.lastName}`;
-        } 
+        default: function() {
+            return `https://ui-avatars.com/api/?name=${this.firstName}+${this.lastName}&background=random`;
+        }
     },
     additionalDetails:{
         type:mongoose.Schema.Types.ObjectId,

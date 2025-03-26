@@ -2,17 +2,21 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const axios = require('axios');
+const fileupload = require('express-fileupload');
 
 const app = express();
 
 // Middleware
+
 app.use(express.json());
-app.use(
-    cors({
-        origin: "*",
-        credentials: true,
-    })
-);
+app.use(fileupload({
+    useTempFiles : true,
+    tempFileDir : '/tmp/'
+}));
+app.use(cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true
+  }));
 
 
 // Importing Configurations
@@ -27,7 +31,8 @@ const epfoRouter = require('./routers/epfoRouter');
 const paymentRouter = require('./routers/paymentRouter');
 const taskRouter = require('./routers/taskRouter');
 const locationRouter = require('./routers/locationRouter');
-const userRouter = require("./routers/userRouter");
+const profileRouter = require("./routers/profileRouter");
+const userRouter=require('./routers/userRouter')
 
 // Database Connection
 databaseConnection();
@@ -41,6 +46,7 @@ app.use('/api/v1', epfoRouter);
 app.use('/api/v1', paymentRouter);
 app.use('/api/v1', taskRouter);
 app.use('/api/v1', locationRouter);
+app.use('/api/v1', profileRouter);
 app.use('/api/v1', userRouter);
 
 app.get('/', (req, res) => {

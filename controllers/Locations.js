@@ -3,54 +3,65 @@ const ActiveTask = require('../models/ActiveTask');
 
 // Fetch real-time route between delivery partner and client using OpenStreetMap (OSRM)
 exports.getRouteActive = async (req, res) => {
-    try {
-        
+  try {
+      console.log("Received request for getRouteActive");
 
-        const { taskId } = req.body; // Get task ID from request
-        if (!taskId) {
-            return res.status(400).json({ error: "Task ID is required" });
-        }
+      const { taskId } = req.body; // Get task ID from request
+      console.log("Task ID:", taskId);
 
-        // Find the active task and populate client & worker details
-        const task = await ActiveTask.findById(taskId).populate("client worker category");
-       
-        if (!task) {
-            return res.status(404).json({ error: "Active task not found" });
-        }
+      if (!taskId) {
+          console.log("Error: Task ID is missing");
+          return res.status(400).json({ error: "Task ID is required" });
+      }
 
-        const { clientLocation, workerLocation } = task;
-        console.log("Client Location:", clientLocation);
-        console.log("Worker Location:", workerLocation);
+      // Find the active task and populate client & worker details
+      const task = await ActiveTask.findById(taskId).populate("client worker category");
+      console.log("Fetched task from DB:", task);
 
-        if (!clientLocation || !workerLocation || !workerLocation.latitude || !workerLocation.longitude) {
-            return res.status(400).json({ error: "Client or Worker location data is missing or incomplete" });
-        }
+      if (!task) {
+          console.log("Error: Task not found");
+          return res.status(404).json({ error: "Active task not found" });
+      }
 
-        const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${workerLocation.longitude},${workerLocation.latitude};${clientLocation.longitude},${clientLocation.latitude}?overview=full&geometries=geojson`;
-       
+      const { clientLocation, workerLocation } = task;
+      console.log("Client Location:", clientLocation);
+      console.log("Worker Location:", workerLocation);
 
-        const response = await axios.get(osrmUrl);
-       
+      if (!clientLocation || !workerLocation || !workerLocation.latitude || !workerLocation.longitude) {
+          console.log("Error: Incomplete location data");
+          return res.status(400).json({ error: "Client or Worker location data is missing or incomplete" });
+      }
 
-        if (response.data.routes.length === 0) {
-            return res.status(404).json({ error: "No route found" });
-        }
+      // Construct the OSRM API URL
+      const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${workerLocation.longitude},${workerLocation.latitude};${clientLocation.longitude},${clientLocation.latitude}?overview=full&geometries=geojson`;
+      console.log("OSRM URL:", osrmUrl);
 
-        // Convert distance to kilometers
-        const distanceKm = response.data.routes[0].distance / 1000;
+      // Make the request to OSRM
+      const response = await axios.get(osrmUrl);
+      console.log("OSRM Response:", response.data);
 
-        res.json({
-            success: true,
-            message: "Fetched route successfully.",
-            task: task,
-            distance: `${distanceKm.toFixed(2)} km`,
-            duration: response.data.routes[0].duration, // Duration in seconds
-            geometry: response.data.routes[0].geometry, // Route geometry (GeoJSON)
-        });
-    } catch (error) {
-        console.error("OSRM Error:", error.message);
-        res.status(500).json({ error: "Internal Server Error", details: error.message });
-    }
+      if (response.data.routes.length === 0) {
+          console.log("Error: No route found");
+          return res.status(404).json({ error: "No route found" });
+      }
+
+      // Convert distance to kilometers
+      const distanceKm = response.data.routes[0].distance / 1000;
+      console.log("Calculated Distance:", distanceKm.toFixed(2), "km");
+
+      res.json({
+          success: true,
+          message: "Fetched route successfully.",
+          task: task,
+          distance: `${distanceKm.toFixed(2)} km`,
+          duration: response.data.routes[0].duration, // Duration in seconds
+          geometry: response.data.routes[0].geometry, // Route geometry (GeoJSON)
+      });
+
+  } catch (error) {
+      console.error("OSRM Error:", error.message);
+      res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
 };
 
 exports.getRouteRequested = async (req, res) => {
