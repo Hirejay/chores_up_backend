@@ -109,7 +109,7 @@ const ActiveTask = require("../models/ActiveTask");
 
 // Define your deployed proxy server URL
 const PROXY_SERVER_URL = "https://proxy-route-jze075eol-chores-ups-projects.vercel.app"; // Replace with actual proxy URL
-
+// const PROXY_SERVER_URL = "http://localhost:5000"; 
 // Fetch real-time route between delivery partner and client using Proxy Server
 exports.getRouteActive = async (req, res) => {
   try {
@@ -148,9 +148,23 @@ exports.getRouteActive = async (req, res) => {
       clientLongitude: clientLocation.longitude,
     });
 
+    if(!response.data.success){
+      return res.json(response.data);
+    }
+    
+
     console.log("Proxy Server Response:", response.data);
 
-    return res.json(response.data);
+    
+    return res.status(200).json(
+      {
+        success:true,
+        geometry:response.data.route.geometry,
+        distance:response.data.route.distance,
+        duration:response.data.route.duration,
+        task:task
+
+      });
   } catch (error) {
     console.error("Proxy Error:", error.message);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
@@ -178,7 +192,19 @@ exports.getRouteRequested = async (req, res) => {
       clientLongitude: task.clientLocation.longitude,
     });
 
-    return res.status(200).json(response.data);
+    if(!response.data.success){
+      return res.json(response.data);
+    }
+    
+    return res.status(200).json(
+      {
+        success:true,
+        geometry:response.data.route.geometry,
+        distance:response.data.route.distance,
+        duration:response.data.route.duration,
+        task:task
+
+      });
   } catch (error) {
     console.error("Error fetching route:", error);
     return res.status(500).json({ success: false, message: "Server error." });
