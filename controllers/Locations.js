@@ -108,7 +108,7 @@ const axios = require("axios");
 const ActiveTask = require("../models/ActiveTask");
 
 // Define your deployed proxy server URL
-const PROXY_SERVER_URL = "https://proxy-route-jze075eol-chores-ups-projects.vercel.app/"; // Replace with actual proxy URL
+const PROXY_SERVER_URL = "https://proxy-route-jze075eol-chores-ups-projects.vercel.app"; // Replace with actual proxy URL
 
 // Fetch real-time route between delivery partner and client using Proxy Server
 exports.getRouteActive = async (req, res) => {
