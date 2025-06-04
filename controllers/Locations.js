@@ -1,4 +1,3 @@
-
 /*
 const axios = require('axios'); // For CommonJS modules
 const ActiveTask = require('../models/ActiveTask');
@@ -104,6 +103,8 @@ exports.getRouteRequested = async (req, res) => {
 
 
 
+/*
+
 const axios = require("axios");
 const ActiveTask = require("../models/ActiveTask");
 
@@ -205,6 +206,276 @@ exports.getRouteRequested = async (req, res) => {
         task:task
 
       });
+  } catch (error) {
+    console.error("Error fetching route:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+*/
+
+
+/*
+const axios = require("axios");
+const ActiveTask = require("../models/ActiveTask");
+
+// Your OpenRouteService API key (replace with your own)
+const ORS_API_KEY = "5b3ce3597851110001cf62481ad39674ab4346cd826fcf11dfc9c1ed";
+
+async function getRouteFromORS(startLng, startLat, endLng, endLat) {
+  const url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
+
+  const body = {
+    coordinates: [
+      [startLng, startLat],
+      [endLng, endLat],
+    ],
+  };
+
+  const headers = {
+    Accept: "application/json, application/geo+json",
+    Authorization: ORS_API_KEY,
+    "Content-Type": "application/json",
+  };
+
+  const response = await axios.post(url, body, { headers });
+
+  return response.data;
+}
+
+exports.getRouteActive = async (req, res) => {
+  try {
+    console.log("Received request for getRouteActive");
+
+    const { taskId } = req.body;
+    console.log("Task ID:", taskId);
+
+    if (!taskId) {
+      console.log("Error: Task ID is missing");
+      return res.status(400).json({ error: "Task ID is required" });
+    }
+
+    const task = await ActiveTask.findById(taskId).populate("client worker category");
+    console.log("Fetched task from DB:", task);
+
+    if (!task) {
+      console.log("Error: Task not found");
+      return res.status(404).json({ error: "Active task not found" });
+    }
+
+    const { clientLocation, workerLocation } = task;
+    console.log("Client Location:", clientLocation);
+    console.log("Worker Location:", workerLocation);
+
+    if (!clientLocation || !workerLocation || !workerLocation.latitude || !workerLocation.longitude) {
+      console.log("Error: Incomplete location data");
+      return res.status(400).json({ error: "Client or Worker location data is missing or incomplete" });
+    }
+
+    // Call OpenRouteService directly
+    const orsData = await getRouteFromORS(
+      workerLocation.longitude,
+      workerLocation.latitude,
+      clientLocation.longitude,
+      clientLocation.latitude
+    );
+
+    if (!orsData.features || !orsData.features.length) {
+      return res.status(404).json({ error: "No route found" });
+    }
+
+    const route = orsData.features[0];
+    const summary = route.properties.summary;
+
+    return res.status(200).json({
+      success: true,
+      geometry: route.geometry,
+      distance: `${(summary.distance / 1000).toFixed(2)} km`,
+      duration: summary.duration, // in seconds
+      task: task,
+    });
+  } catch (error) {
+    console.error("OpenRouteService Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+exports.getRouteRequested = async (req, res) => {
+  try {
+    const { taskId, workerLatitude, workerLongitude } = req.body;
+
+    if (!workerLatitude || !workerLongitude) {
+      return res.status(400).json({ success: false, message: "Worker location is required." });
+    }
+
+    const task = await ActiveTask.findById(taskId);
+    if (!task || !task.clientLocation) {
+      return res.status(404).json({ success: false, message: "Task not found or client location missing." });
+    }
+
+    // Call OpenRouteService directly
+    const orsData = await getRouteFromORS(
+      workerLongitude,
+      workerLatitude,
+      task.clientLocation.longitude,
+      task.clientLocation.latitude
+    );
+
+    if (!orsData.features || !orsData.features.length) {
+      return res.status(404).json({ success: false, message: "No route found." });
+    }
+
+    const route = orsData.features[0];
+    const summary = route.properties.summary;
+
+    return res.status(200).json({
+      success: true,
+      geometry: route.geometry,
+      distance: `${(summary.distance / 1000).toFixed(2)} km`,
+      duration: summary.duration, // in seconds
+      task: task,
+    });
+  } catch (error) {
+    console.error("Error fetching route:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+*/
+
+
+const axios = require("axios");
+const ActiveTask = require("../models/ActiveTask");
+
+// Your OpenRouteService API key (replace with your own)
+const ORS_API_KEY = "5b3ce3597851110001cf62481ad39674ab4346cd826fcf11dfc9c1ed";
+
+async function getRouteFromORS(startLng, startLat, endLng, endLat) {
+  const url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
+
+  const body = {
+    coordinates: [
+      [startLng, startLat],
+      [endLng, endLat],
+    ],
+    instructions: true,
+  };
+
+  const headers = {
+    Accept: "application/json, application/geo+json",
+    Authorization: ORS_API_KEY,
+    "Content-Type": "application/json",
+  };
+
+  const response = await axios.post(url, body, { headers });
+
+  return response.data;
+}
+
+exports.getRouteActive = async (req, res) => {
+  try {
+    console.log("Received request for getRouteActive");
+
+    const { taskId } = req.body;
+    console.log("Task ID:", taskId);
+
+    if (!taskId) {
+      console.log("Error: Task ID is missing");
+      return res.status(400).json({ error: "Task ID is required" });
+    }
+
+    const task = await ActiveTask.findById(taskId).populate("client worker category");
+    console.log("Fetched task from DB:", task);
+
+    if (!task) {
+      console.log("Error: Task not found");
+      return res.status(404).json({ error: "Active task not found" });
+    }
+
+    const { clientLocation, workerLocation } = task;
+    console.log("Client Location:", clientLocation);
+    console.log("Worker Location:", workerLocation);
+
+    if (!clientLocation || !workerLocation || !workerLocation.latitude || !workerLocation.longitude) {
+      console.log("Error: Incomplete location data");
+      return res.status(400).json({ error: "Client or Worker location data is missing or incomplete" });
+    }
+
+    const orsData = await getRouteFromORS(
+      workerLocation.longitude,
+      workerLocation.latitude,
+      clientLocation.longitude,
+      clientLocation.latitude
+    );
+
+    if (!orsData.features || !orsData.features.length) {
+      return res.status(404).json({ error: "No route found" });
+    }
+
+    const route = orsData.features[0];
+    const summary = route.properties.summary;
+    const steps = route.properties.segments[0].steps.map((step) => ({
+      instruction: step.instruction,
+      distance: `${step.distance.toFixed(1)} m`,
+      duration: `${step.duration.toFixed(1)} sec`,
+      name: step.name,
+      type: step.type,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      geometry: route.geometry,
+      distance: `${(summary.distance / 1000).toFixed(2)} km`,
+      duration: `${(summary.duration / 60).toFixed(2)} min`,
+      task: task,
+      steps: steps,
+    });
+  } catch (error) {
+    console.error("OpenRouteService Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+exports.getRouteRequested = async (req, res) => {
+  try {
+    const { taskId, workerLatitude, workerLongitude } = req.body;
+
+    if (!workerLatitude || !workerLongitude) {
+      return res.status(400).json({ success: false, message: "Worker location is required." });
+    }
+
+    const task = await ActiveTask.findById(taskId);
+    if (!task || !task.clientLocation) {
+      return res.status(404).json({ success: false, message: "Task not found or client location missing." });
+    }
+
+    const orsData = await getRouteFromORS(
+      workerLongitude,
+      workerLatitude,
+      task.clientLocation.longitude,
+      task.clientLocation.latitude
+    );
+
+    if (!orsData.features || !orsData.features.length) {
+      return res.status(404).json({ success: false, message: "No route found." });
+    }
+
+    const route = orsData.features[0];
+    const summary = route.properties.summary;
+    const steps = route.properties.segments[0].steps.map((step) => ({
+      instruction: step.instruction,
+      distance: `${step.distance.toFixed(1)} m`,
+      duration: `${step.duration.toFixed(1)} sec`,
+      name: step.name,
+      type: step.type,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      geometry: route.geometry,
+      distance: `${(summary.distance / 1000).toFixed(2)} km`,
+      duration: `${(summary.duration / 60).toFixed(2)} min`,
+      task: task,
+      steps: steps,
+    });
   } catch (error) {
     console.error("Error fetching route:", error);
     return res.status(500).json({ success: false, message: "Server error." });
